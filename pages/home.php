@@ -125,13 +125,6 @@ defined('CONTROL') or die('Acesso inválido')
                         <label for="nomeMateria" class="form-label">Nome da Matéria</label>
                         <input type="text" class="form-control" id="nomeMateria" placeholder="Insira o nome da Matéria">
                     </div>
-
-                    <div class="mb-3">
-                        <label for="nomeMateria" class="form-label">Professor</label>
-                        <select id="selectProfessor" class="form-control">
-
-                        </select>
-                    </div>
                     <button type="submit" id="btnAddMateria" class="btn btn-warning">Adicionar</button>
                 </form>
             </div>
@@ -198,39 +191,6 @@ defined('CONTROL') or die('Acesso inválido')
 <script>
     function setStudentId(id) {
         document.getElementById('studentId').value = id;
-    }
-
-    // Função para carregar professores no select
-    async function loadProfessores() {
-        try {
-            const response = await fetch('http://localhost:8000/api/professor', {
-                method: 'GET',
-            });
-
-            // Verifica se a resposta foi bem-sucedida
-            if (!response.ok) {
-                throw new Error(`Erro na requisição: ${response.status} ${response.statusText}`);
-            }
-            const data = await response.json();
-
-            const selectProfessor = document.getElementById('selectProfessor');
-            
-            selectProfessor.innerHTML = '';
-
-            const defaultOption = document.createElement('option');
-            defaultOption.textContent = 'Selecione um Professor';
-            defaultOption.value = '';
-            selectProfessor.appendChild(defaultOption);
-
-            data.forEach(professor => {
-                const option = document.createElement('option');
-                option.value = professor.CODPROF;
-                option.textContent = professor.NOME;
-                selectProfessor.appendChild(option);
-            });
-        } catch (error) {
-            console.error('Erro ao carregar professores:', error);
-        }
     }
 
     async function loadMateriasAluno() {
@@ -302,12 +262,8 @@ defined('CONTROL') or die('Acesso inválido')
         document.getElementById('nomeMateria').value = '';
 
         var descricao = document.getElementById('nomeMateria')
-        var codprof = document.getElementById('selectProfessor')
         descricao.classList.remove('is-invalid');
-        codprof.classList.remove('is-invalid');
 
-        var selectProfessor = document.getElementById('selectProfessor');
-        selectProfessor.selectedIndex = 0; 
     });
 
     var form = document.getElementById('addMateriaForm');
@@ -315,29 +271,24 @@ defined('CONTROL') or die('Acesso inválido')
         event.preventDefault();
 
         var descricao = document.getElementById('nomeMateria').value.trim();
-        var codprof = document.getElementById('selectProfessor').value.trim();
 
         // Validação: Verifica se os campos estão preenchidos
-        if (!descricao || !codprof) {
+        if (!descricao) {
             var descricao = document.getElementById('nomeMateria')
-            var codprof = document.getElementById('selectProfessor')
 
             descricao.classList.add('is-invalid');
-            codprof.classList.add('is-invalid');
             Swal.fire({
                 title: 'Campos Obrigatórios!',
                 text: `Por favor, preencha os campos obrgatórios`,
                 icon: 'warning',
-                timer: 1500, // 3 segundos
+                timer: 1500,
                 showConfirmButton: false,
             });
-
             return; 
         }
 
         var data = {
             DESCRICAO: descricao,
-            CODPROF: codprof,
         };
 
         try {
@@ -380,15 +331,6 @@ defined('CONTROL') or die('Acesso inválido')
                         showConfirmButton: false,
                     });
                 }
-                if (result.errors.CODPROF) {
-                    Swal.fire({
-                        title: 'Atenção!',
-                        text: 'Código do professor inválido.',
-                        icon: 'error',
-                        timer: 1500,
-                        showConfirmButton: false,
-                    });
-                }
             } else {
                 console.error('Erro inesperado:', result);
                 Swal.fire({
@@ -412,7 +354,6 @@ defined('CONTROL') or die('Acesso inválido')
     });
 
 
-    document.addEventListener('DOMContentLoaded', loadProfessores);
     document.addEventListener('DOMContentLoaded', loadMateriasAluno);
     document.addEventListener('DOMContentLoaded', loadMateriasProfessor);
 

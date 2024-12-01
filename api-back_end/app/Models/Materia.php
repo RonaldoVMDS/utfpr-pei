@@ -13,5 +13,5 @@ class Materia extends Model
     
     protected $table = 'materias';
     protected $primaryKey = 'CODMAT';
-    protected $fillable = ['DESCRICAO', 'CODPROF', 'STATUS'];
+    protected $fillable = ['DESCRICAO', 'STATUS'];
 }

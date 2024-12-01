@@ -22,7 +22,6 @@ class MateriaController extends Controller
         try {
             $validated = $request->validate([
                 'DESCRICAO' => 'required|max:100|unique:materias,DESCRICAO',
-                'CODPROF' => 'required|max:11|exists:professors,CODPROF',
                 'STATUS' => 'nullable|in:A,I',
             ]);
 
@@ -44,6 +43,23 @@ class MateriaController extends Controller
             return response()->json(['error' => 'Erro ao obter as materias'], 500);
         }
     }
+
+    public function getMateriaById($id){
+        try {
+            $materia = Materia::findOrFail($id);
+            return response()->json($materia, 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Matéria não encontrada.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao buscar a matéria.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
     /**
      * Store a newly created resource in storage.
      */
@@ -63,9 +79,47 @@ class MateriaController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Materia $materia)
-    {
-        //
+    public function edit(Request $request, $id){
+        try {
+            $validated = $request->validate([
+                'DESCRICAO' => 'required|max:100|unique:materias,DESCRICAO,' . $id. ',CODMAT',
+                'STATUS' => 'nullable|in:A,I',
+            ]);
+    
+            $materia = Materia::findOrFail($id);
+            $materia->update($validated);
+    
+            return response()->json(['message' => 'Atualização bem-sucedida!', "status" => 200], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao atualizar a matéria.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function delete($id){
+        try {
+            $materia = Materia::findOrFail($id);
+
+            $materia->update(['STATUS' => 'I']);
+
+            return response()->json(['message' => 'Matéria desativada com sucesso!', "status" => 200], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Matéria não encontrada.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao desativar a matéria.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
