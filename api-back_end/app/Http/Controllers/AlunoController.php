@@ -16,18 +16,25 @@ class AlunoController extends Controller
         return response()->json(Aluno::all(), 200);
     }
 
+    public function getAlunos()
+    {
+        try {
+            $aluno = Aluno::where('STATUS', 'A')->get(['CODALU', 'NOME', 'EMAIL']);
+            return response()->json($aluno);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao obter aluno'], 500);
+        }
+    }
+
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        //
-    }
+    
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function create(Request $request)
     {
         $validated = $request->validate([
             'NOME' => 'required|max:100|unique:alunos,NOME',
@@ -44,24 +51,33 @@ class AlunoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function getAlunoById($id)
     {
-        $aluno = Aluno::findOrFail($id);
-        return response()->json($aluno, 200);
+        try {
+            $aluno = Aluno::findOrFail($id);
+            return response()->json($aluno, 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'aluno não encontrado.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao buscar o aluno.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Aluno $aluno)
-    {
-        //
-    }
+    
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function edit(Request $request, $id)
     {
         $aluno = Aluno::findOrFail($id);
         $validated = $request->validate([
@@ -78,10 +94,24 @@ class AlunoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function delete($id)
     {
-        $aluno = Aluno::findOrFail($id);
-        $aluno->delete();
-        return response()->noContent();
+        try {
+            $aluno = Aluno::findOrFail($id);
+
+            $aluno->update(['STATUS' => 'I']);
+
+            return response()->json(['message' => 'aluno desativado com sucesso!', "status" => 200], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'aluno não encontrado.',
+                'error' => $e->getMessage(),
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Erro ao desativar o aluno.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
